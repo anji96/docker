@@ -1,0 +1,75 @@
+
+
+docker ps --format "table {{.Names}} \t {{.Image}}"
+
+docker inspect --format '{{ index (index .Config.Env) 16 }}' rancher-agent
+
+docker exec -it ed6203f82040 curl -I localhost:5000/application/health
+
+# list IP addresses for all containers connected to 'bridge' network 
+docker network inspect bridge -f '{{json .Containers}}' | jq '.[] | {cont: .Name, ip: .IPv4Address}
+
+Last contianer
+docker ps -al
+
+docker ps --format '{{ json . }}' --all  | jq -r '"\(.Image), \(.Size)"'
+
+docker network inspect -f='{{json .Containers}}' bridge
+docker network inspect -f='{{.Containers}}' bridge
+
+# is the last run container still running? docker inspect --format '{{.State.Running}}' $(docker ps -lq)
+
+-------------
+Remove Dangling Volumes
+dangling volumes are volumes not in use by any container. To remove them, combine two commands: first, list volume IDs for dangling volumes and then remove them.
+docker volume rm $(docker volume ls -q -f "dangling=true")
+1
+Remove Exited Containers
+The same principle works here too. First, list the containers (only IDs) you want to remove (with filter) and then remove them (consider rm -f to force remove).
+docker rm $(docker ps -q -f "status=exited")
+1
+Remove Dangling Images
+dangling images are untagged images, that are the leaves of the images tree (not intermediary layers).
+docker rmi $(docker images -q -f "dangling=true")
+
+-------------------------------
+
+docker inspect -f {{.State.Pid}} e97d827556cd   (Get process ID of container)
+4938
+
+Now, run the commands inside the container:
+
+nsenter -t 4938 -n ip a      (4938 is the PID,   -n flag comes before the command)
+
+Ex:  nsenter -t 14346 -n dig kubernetes.default.svc.cluster.local @10.32.0.10
+
+
+root@soba1-tl-rchc10 ~]# docker inspect ansible/awx_task | grep -i cmd
+            "Cmd": [
+                "CMD [\"/bin/sh\" \"-c\" \"/usr/bin/launch_awx_task.sh\"]"
+            "Cmd": [
+[root@soba1-tl-rchc10 ~]#
+[root@soba1-tl-rchc10 ~]# docker inspect ansible/awx_task | grep -i entrypoint
+            "Entrypoint": [
+            "Entrypoint": [
+[root@soba1-tl-rchc10 ~]#
+[root@soba1-tl-rchc10 ~]# docker run --rm -it --entrypoint=/bin/sh ansible/awx_task
+sh-4.4$ ls -l /usr/bin/launch_awx_task.sh
+-rwxr-xr-x 1 root root 1654 Nov  4 17:00 /usr/bin/launch_awx_task.sh
+sh-4.4$
+
+
+=======
+
+sh-4.4$ /usr/bin/ansible --version
+ansible 2.8.5
+  config file = /etc/ansible/ansible.cfg
+  configured module search path = ['/home/awx/.ansible/plugins/modules', '/usr/share/ansible/plugins/modules']
+  ansible python module location = /usr/lib/python3.6/site-packages/ansible
+  executable location = /usr/bin/ansible
+  python version = 3.6.8 (default, Oct  7 2019, 17:58:22) [GCC 8.2.1 20180905 (Red Hat 8.2.1-3)]
+
+---------------------------===============================================
+
+
+docker run --rm -it --privileged --entrypoint=/bin/sh ansible/awx_task

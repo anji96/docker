@@ -44,16 +44,16 @@ nsenter -t 4938 -n ip a      (4938 is the PID,   -n flag comes before the comman
 Ex:  nsenter -t 14346 -n dig kubernetes.default.svc.cluster.local @10.32.0.10
 
 
-root@soba1-tl-rchc10 ~]# docker inspect ansible/awx_task | grep -i cmd
+root@my-mac ~]# docker inspect ansible/awx_task | grep -i cmd
             "Cmd": [
                 "CMD [\"/bin/sh\" \"-c\" \"/usr/bin/launch_awx_task.sh\"]"
             "Cmd": [
-[root@soba1-tl-rchc10 ~]#
-[root@soba1-tl-rchc10 ~]# docker inspect ansible/awx_task | grep -i entrypoint
+[root@my-mac ~]#
+[root@my-mac ~]# docker inspect ansible/awx_task | grep -i entrypoint
             "Entrypoint": [
             "Entrypoint": [
-[root@soba1-tl-rchc10 ~]#
-[root@soba1-tl-rchc10 ~]# docker run --rm -it --entrypoint=/bin/sh ansible/awx_task
+[root@my-mac ~]#
+[root@my-mac ~]# docker run --rm -it --entrypoint=/bin/sh ansible/awx_task
 sh-4.4$ ls -l /usr/bin/launch_awx_task.sh
 -rwxr-xr-x 1 root root 1654 Nov  4 17:00 /usr/bin/launch_awx_task.sh
 sh-4.4$
